@@ -109,3 +109,11 @@ int insideTriangle(struct Vec2 triangle[4], struct Vec2 normVec) {
         return 0;
     }
 }
+
+int insideScreen(struct Vec2 point) {
+    struct Vec2 arr = convertToArray(point);
+    if (arr.x >= 0 && arr.x < WIDTH && arr.y >= 0 && arr.y < HEIGHT) {
+        return 1;
+    }
+    return 0;
+}

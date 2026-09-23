@@ -46,6 +46,8 @@ struct World *setupWorld(int numOfObjects, struct Object objs[]);
 
 int insideTriangle(struct Vec2 triangle[4], struct Vec2 point);
 
+int insideScreen(struct Vec2 point);
+
 char getPixel(double brightness);
 
 // array is positive Z
