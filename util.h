@@ -1,6 +1,5 @@
 #include <math.h>
 #define FOCAL_LENGTH 1
-#define INF 100000
 #define HEIGHT 50
 #define WIDTH 50
 
@@ -40,7 +39,7 @@ int roundOff(double val);
 
 struct Object setupCuboid(struct Vec3 vertices[8], struct Vec3 origin, double brightness);
 
-struct Camera *setupCamera(); // set depths to INF and rendering buffer to spaces
+struct Camera *setupCamera(); // set depths to INFINITY and rendering buffer to spaces
 
 struct World *setupWorld(int numOfObjects, struct Object objs[]);
 

@@ -51,7 +51,7 @@ struct Camera *setupCamera() {
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
             camera->renderingBuffer[y][x] = ' ';
-            camera->depthBuffer[y][x] = INF;
+            camera->depthBuffer[y][x] = INFINITY;
         }
     }
     return camera;
@@ -82,7 +82,7 @@ int insideTriangle(struct Vec2 triangle[4], struct Vec2 normVec) {
         // suspicious use of (triangle[arr[0]].x - triangle[arr[1]].x) == 0 many times
         double m;
         if ((triangle[arr[0]].x - triangle[arr[1]].x) == 0) {
-            m = INF;
+            m = INFINITY;
             goto jmp;
         }
         m = (triangle[arr[0]].y - triangle[arr[1]].y) / (triangle[arr[0]].x - triangle[arr[1]].x);
@@ -116,4 +116,18 @@ int insideScreen(struct Vec2 point) {
         return 1;
     }
     return 0;
+}
+
+// takes the 3D triangle with positive or zero z values
+void fill(struct Camera *camera, struct Vec3 triangle[4]) {
+    struct Vec2 triangle2D[3];
+    for (int i = 0; i < 3; i++) {
+        triangle2D[i].x = (FOCAL_LENGTH * triangle[i].x) / triangle[i].z;
+        triangle2D[i].y = (FOCAL_LENGTH * triangle[i].y) / triangle[i].z;
+    }
+    // plane
+    double a = ((triangle[0].x - triangle[2].x) * (triangle[1].y - triangle[2].y)) - ((triangle[1].x - triangle[2].x) * (triangle[0].y - triangle[2].y)) == 0 ? INFINITY : (((triangle[0].z - triangle[2].z) * (triangle[1].y - triangle[2].y)) - ((triangle[1].z - triangle[2].z) * (triangle[0].y - triangle[2].y))) / (((triangle[0].x - triangle[2].x) * (triangle[1].y - triangle[2].y)) - ((triangle[1].x - triangle[2].x) * (triangle[0].y - triangle[2].y)));
+    double b = (((triangle[0].y - triangle[2].y) * (triangle[1].x - triangle[2].x)) - ((triangle[1].y - triangle[2].y) * (triangle[0].x - triangle[2].x))) == 0 ? INFINITY : (((triangle[0].z - triangle[2].z) * (triangle[1].x - triangle[2].x)) - ((triangle[1].z - triangle[2].z) * (triangle[0].x - triangle[2].x))) / (((triangle[0].y - triangle[2].y) * (triangle[1].x - triangle[2].x)) - ((triangle[1].y - triangle[2].y) * (triangle[0].x - triangle[2].x)));
+    double c =  ((((triangle[1].x - triangle[0].x) * ((triangle[1].y * triangle[2].x) - (triangle[2].y * triangle[1].x))) - ((triangle[2].x - triangle[1].x) * ((triangle[0].y * triangle[1].x) - (triangle[1].y * triangle[0].x))))) ? INFINITY : (((((triangle[0].z * triangle[1].x) - (triangle[1].z * triangle[0].x)) * ((triangle[1].y * triangle[2].x) - (triangle[2].y * triangle[1].x))) - (((triangle[1].z * triangle[2].x) - (triangle[2].z * triangle[1].x)) * ((triangle[0].y * triangle[1].x) - (triangle[1].y * triangle[0].x))))) / ((((triangle[1].x - triangle[0].x) * ((triangle[1].y * triangle[2].x) - (triangle[2].y * triangle[1].x))) - ((triangle[2].x - triangle[1].x) * ((triangle[0].y * triangle[1].x) - (triangle[1].y * triangle[0].x)))));
+    
 }
