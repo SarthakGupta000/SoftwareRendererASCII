@@ -1,5 +1,6 @@
 #include <math.h>
 #define FOCAL_LENGTH 1
+#define EPSILON 1e-6
 #define HEIGHT 50
 #define WIDTH 50
 
@@ -31,6 +32,8 @@ struct Camera {
     double depthBuffer[HEIGHT][WIDTH];
 };
 
+int approxEqual(double a, double b);
+
 struct Vec2 convertToArray(struct Vec2 point);
 
 struct Vec2 convertToNomal(struct Vec2 point);
@@ -43,16 +46,16 @@ struct Camera *setupCamera(); // set depths to INFINITY and rendering buffer to 
 
 struct World *setupWorld(int numOfObjects, struct Object objs[]);
 
-int insideTriangle(struct Vec2 triangle[4], struct Vec2 point);
-
 int insideScreen(struct Vec2 point);
+
+int insideTriangle(struct Vec2 triangle[4], struct Vec2 point);
 
 char getPixel(double brightness);
 
 // array is positive Z
 void fill(struct Camera *camera, struct Vec3 triangle[4]); // updates the depth buffer, fills, 2D clipping
  
-void rasterize(struct Vec3 triangle[4]); // everything like negative clipping, calling fill
+void rasterize(struct Camera *camera, struct Vec3 triangle[4]); // everything like negative clipping, calling fill
 
 void render(struct Camera *camera);
 

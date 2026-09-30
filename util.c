@@ -2,6 +2,10 @@
 
 // helpers
 
+int approxEqual(double a, double b) {
+    return fabs(a - b) < EPSILON;
+}
+
 struct Vec2 convertToArray(struct Vec2 point) {
     struct Vec2 newPoint;
     newPoint.x = (WIDTH / 2) + point.x;
@@ -67,6 +71,14 @@ struct World *setupWorld(int numOfObjects, struct Object objs[]) {
     return world;
 }
 
+int insideScreen(struct Vec2 point) {
+    struct Vec2 arr = convertToArray(point);
+    if (arr.x >= 0 && arr.x < WIDTH && arr.y >= 0 && arr.y < HEIGHT) {
+        return 1;
+    }
+    return 0;
+}
+
 int insideTriangle(struct Vec2 triangle[4], struct Vec2 normVec) {
     int sum = 0;
     for (int i = 0; i < 3; i++) {
@@ -79,55 +91,66 @@ int insideTriangle(struct Vec2 triangle[4], struct Vec2 normVec) {
             arr[next] = j;
             next++;
         }
-        // suspicious use of (triangle[arr[0]].x - triangle[arr[1]].x) == 0 many times
-        double m;
-        if ((triangle[arr[0]].x - triangle[arr[1]].x) == 0) {
-            m = INFINITY;
-            goto jmp;
+        if (triangle[arr[0]].x == triangle[arr[1]].x) {
+            if ((triangle[i].x > triangle[arr[0]].x && normVec.x > triangle[arr[0]].x) || (triangle[i].x < triangle[arr[0]].x && normVec.x < triangle[arr[0]].x)) {
+                sum++;
+                continue;
+            }
         }
-        m = (triangle[arr[0]].y - triangle[arr[1]].y) / (triangle[arr[0]].x - triangle[arr[1]].x);
-        jmp:;
-        double yIntercept = (triangle[arr[0]].x - triangle[arr[1]].x) == 0 ? triangle[arr[0]].y : triangle[arr[0]].y - (m * triangle[arr[0]].x);
-        // general form (not really)
+        double m = (triangle[arr[0]].y - triangle[arr[1]].y) / (triangle[arr[0]].x - triangle[arr[1]].y);
+        double yInt = triangle[arr[0]].y - (m * triangle[arr[0]].x);
         double a = m;
         double b = -1;
-        double c = yIntercept;
-        double result1 = (triangle[arr[0]].x - triangle[arr[1]].x) == 0 ? triangle[i].x - triangle[arr[0]].x : (a * triangle[i].x) + (b * triangle[i].y) + c;
-        double result2 = (triangle[arr[0]].x - triangle[arr[1]].x) == 0 ? normVec.x - triangle[arr[0]].x : (a * normVec.x) + (b * normVec.y) + c;
-        if (result2 == 0) {
-            sum += 1;
-            break;
-        }
-        if ((result1 > 0 && result2 > 0) || (result1 < 0 && result2 < 0)) {
-            sum += 1;
-            break;
+        double c = yInt;
+        double val1 = (a * triangle[i].x) + (b * triangle[i].y) + c;
+        double val2 = (a * normVec.x) + (b * normVec.y) + c;
+        if ((val1 > 0 && val2 > 0) || (val1 < 0 && val2 < 0)) {
+            sum++;
         }
     }
-    if (sum == 3) {
+    if (sum == 3 && insideScreen(normVec)) {
         return 1;
     } else {
         return 0;
     }
 }
 
-int insideScreen(struct Vec2 point) {
-    struct Vec2 arr = convertToArray(point);
-    if (arr.x >= 0 && arr.x < WIDTH && arr.y >= 0 && arr.y < HEIGHT) {
-        return 1;
-    }
-    return 0;
-}
-
 // takes the 3D triangle with positive or zero z values
 void fill(struct Camera *camera, struct Vec3 triangle[4]) {
     struct Vec2 triangle2D[3];
     for (int i = 0; i < 3; i++) {
-        triangle2D[i].x = (FOCAL_LENGTH * triangle[i].x) / triangle[i].z;
-        triangle2D[i].y = (FOCAL_LENGTH * triangle[i].y) / triangle[i].z;
+        triangle2D[i].x = approxEqual(triangle[i].z , 0.0) ? triangle[i].x : (FOCAL_LENGTH * triangle[i].x) / triangle[i].z;
+        triangle2D[i].y = approxEqual(triangle[i].z , 0.0) ? triangle[i].y : (FOCAL_LENGTH * triangle[i].y) / triangle[i].z;
     }
     // plane
-    double a = ((triangle[0].x - triangle[2].x) * (triangle[1].y - triangle[2].y)) - ((triangle[1].x - triangle[2].x) * (triangle[0].y - triangle[2].y)) == 0 ? INFINITY : (((triangle[0].z - triangle[2].z) * (triangle[1].y - triangle[2].y)) - ((triangle[1].z - triangle[2].z) * (triangle[0].y - triangle[2].y))) / (((triangle[0].x - triangle[2].x) * (triangle[1].y - triangle[2].y)) - ((triangle[1].x - triangle[2].x) * (triangle[0].y - triangle[2].y)));
-    double b = (((triangle[0].y - triangle[2].y) * (triangle[1].x - triangle[2].x)) - ((triangle[1].y - triangle[2].y) * (triangle[0].x - triangle[2].x))) == 0 ? INFINITY : (((triangle[0].z - triangle[2].z) * (triangle[1].x - triangle[2].x)) - ((triangle[1].z - triangle[2].z) * (triangle[0].x - triangle[2].x))) / (((triangle[0].y - triangle[2].y) * (triangle[1].x - triangle[2].x)) - ((triangle[1].y - triangle[2].y) * (triangle[0].x - triangle[2].x)));
-    double c =  ((((triangle[1].x - triangle[0].x) * ((triangle[1].y * triangle[2].x) - (triangle[2].y * triangle[1].x))) - ((triangle[2].x - triangle[1].x) * ((triangle[0].y * triangle[1].x) - (triangle[1].y * triangle[0].x))))) ? INFINITY : (((((triangle[0].z * triangle[1].x) - (triangle[1].z * triangle[0].x)) * ((triangle[1].y * triangle[2].x) - (triangle[2].y * triangle[1].x))) - (((triangle[1].z * triangle[2].x) - (triangle[2].z * triangle[1].x)) * ((triangle[0].y * triangle[1].x) - (triangle[1].y * triangle[0].x))))) / ((((triangle[1].x - triangle[0].x) * ((triangle[1].y * triangle[2].x) - (triangle[2].y * triangle[1].x))) - ((triangle[2].x - triangle[1].x) * ((triangle[0].y * triangle[1].x) - (triangle[1].y * triangle[0].x)))));
-    
+    double unidepth = 0.0;
+    double a, b, c;
+    if ((triangle[0].x == triangle[1].x && triangle[1].x == triangle[2].x) || (triangle[0].y == triangle[1].y && triangle[1].y == triangle[2].y)) {
+        return;
+    }
+    if (triangle[0].z == triangle[1].z && triangle[1].z == triangle[2].z) {
+        unidepth = triangle[0].z;
+        goto jmp;
+    }
+    a = (((triangle[0].z - triangle[2].z) * (triangle[1].y - triangle[2].y)) - ((triangle[1].z - triangle[2].z) * (triangle[0].y - triangle[2].y))) / (((triangle[0].x - triangle[2].x) * (triangle[1].y - triangle[2].y)) - ((triangle[1].x - triangle[2].x) * (triangle[0].y - triangle[2].y)));
+    b = (((triangle[0].z - triangle[2].z) * (triangle[1].x - triangle[2].x)) - ((triangle[1].z - triangle[2].z) * (triangle[0].x - triangle[2].x))) / (((triangle[0].y - triangle[2].y) * (triangle[1].x - triangle[2].x)) - ((triangle[1].y - triangle[2].y) * (triangle[0].x - triangle[2].x)));
+    c = triangle[0].z - (a * triangle[0].x) - (b * triangle[0].y);
+    jmp:;
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            struct Vec2 arr = {(double) x, (double) y};
+            struct Vec2 norm = convertToNomal(arr);
+            if (insideTriangle(triangle2D, norm)) {
+                double currentDepth;
+                if (approxEqual(unidepth , 0.0)) {
+                    currentDepth = (c * FOCAL_LENGTH) / (FOCAL_LENGTH - (a * norm.x) - (b * norm.y));
+                } else {
+                    currentDepth = unidepth;
+                }
+                if (camera->depthBuffer[y][x] > currentDepth) {
+                    camera->renderingBuffer[y][x] = getPixel(triangle[3].x);
+                }
+            }
+        }
+    }
 }
