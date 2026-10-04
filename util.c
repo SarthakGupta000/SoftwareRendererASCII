@@ -26,16 +26,16 @@ int roundOff(double val) {
 
 /*
 Front view
-D  C
+3  2
 
 
-A  B
+0  1
 
 Back view
-F  E
+5  4
 
 
-G  H
+6  7
 */
 
 struct Object setupCuboid(struct Vec3 vertices[8], struct Vec3 origin, double brightness) { // in order
@@ -46,7 +46,73 @@ struct Object setupCuboid(struct Vec3 vertices[8], struct Vec3 origin, double br
     for (int i = 0; i < cuboid.numOfTriangles; i++) {
         cuboid.triangles[i] = (struct Vec3 *) malloc(sizeof(struct Vec3) * 4);
     }
-    // setting up the 12 triangles... I'll do it later
+
+    // Front
+    cuboid.triangles[0][0] = vertices[0];
+    cuboid.triangles[0][1] = vertices[1];
+    cuboid.triangles[0][2] = vertices[2];
+    cuboid.triangles[0][3] = (struct Vec3) {brightness, 0, 0};
+
+    cuboid.triangles[1][0] = vertices[2];
+    cuboid.triangles[1][1] = vertices[1];
+    cuboid.triangles[1][2] = vertices[3];
+    cuboid.triangles[1][3] = (struct Vec3) {brightness, 0, 0};
+
+    // Back
+    cuboid.triangles[2][0] = vertices[4];
+    cuboid.triangles[2][1] = vertices[5];
+    cuboid.triangles[2][2] = vertices[6];
+    cuboid.triangles[2][3] = (struct Vec3) {brightness, 0, 0};
+
+    cuboid.triangles[3][0] = vertices[6];
+    cuboid.triangles[3][1] = vertices[5];
+    cuboid.triangles[3][2] = vertices[7];
+    cuboid.triangles[3][3] = (struct Vec3) {brightness, 0, 0};
+
+    // Left
+    cuboid.triangles[4][0] = vertices[0];
+    cuboid.triangles[4][1] = vertices[2];
+    cuboid.triangles[4][2] = vertices[6];
+    cuboid.triangles[4][3] = (struct Vec3) {brightness, 0, 0};
+
+    cuboid.triangles[5][0] = vertices[0];
+    cuboid.triangles[5][1] = vertices[6];
+    cuboid.triangles[5][2] = vertices[4];
+    cuboid.triangles[5][3] = (struct Vec3) {brightness, 0, 0};
+
+    // Right
+    cuboid.triangles[6][0] = vertices[1];
+    cuboid.triangles[6][1] = vertices[5];
+    cuboid.triangles[6][2] = vertices[7];
+    cuboid.triangles[6][3] = (struct Vec3) {brightness, 0, 0};
+
+    cuboid.triangles[7][0] = vertices[1];
+    cuboid.triangles[7][1] = vertices[7];
+    cuboid.triangles[7][2] = vertices[3];
+    cuboid.triangles[7][3] = (struct Vec3) {brightness, 0, 0};
+
+    // Top
+    cuboid.triangles[8][0] = vertices[2];
+    cuboid.triangles[8][1] = vertices[3];
+    cuboid.triangles[8][2] = vertices[7];
+    cuboid.triangles[8][3] = (struct Vec3) {brightness, 0, 0};
+
+    cuboid.triangles[9][0] = vertices[2];
+    cuboid.triangles[9][1] = vertices[7];
+    cuboid.triangles[9][2] = vertices[6];
+    cuboid.triangles[9][3] = (struct Vec3) {brightness, 0, 0};
+
+    // Bottom
+    cuboid.triangles[10][0] = vertices[0];
+    cuboid.triangles[10][1] = vertices[4];
+    cuboid.triangles[10][2] = vertices[5];
+    cuboid.triangles[10][3] = (struct Vec3) {brightness, 0, 0};
+
+    cuboid.triangles[11][0] = vertices[0];
+    cuboid.triangles[11][1] = vertices[5];
+    cuboid.triangles[11][2] = vertices[1];
+    cuboid.triangles[11][3] = (struct Vec3) {brightness, 0, 0};
+
     return cuboid;
 }
 
@@ -91,13 +157,13 @@ int insideTriangle(struct Vec2 triangle[4], struct Vec2 normVec) {
             arr[next] = j;
             next++;
         }
-        if (triangle[arr[0]].x == triangle[arr[1]].x) {
+        if (approxEqual(triangle[arr[0]].x, triangle[arr[1]].x)) {
             if ((triangle[i].x > triangle[arr[0]].x && normVec.x > triangle[arr[0]].x) || (triangle[i].x < triangle[arr[0]].x && normVec.x < triangle[arr[0]].x)) {
                 sum++;
                 continue;
             }
         }
-        double m = (triangle[arr[0]].y - triangle[arr[1]].y) / (triangle[arr[0]].x - triangle[arr[1]].y);
+        double m = (triangle[arr[0]].y - triangle[arr[1]].y) / (triangle[arr[0]].x - triangle[arr[1]].x);
         double yInt = triangle[arr[0]].y - (m * triangle[arr[0]].x);
         double a = m;
         double b = -1;
@@ -117,7 +183,7 @@ int insideTriangle(struct Vec2 triangle[4], struct Vec2 normVec) {
 
 char getPixel(double brightness) {
     const char *pixels = " .:-=+*#%@";
-    int index = (int)(brightness / 256.0 * 10);
+    int index = (int)((brightness * 10) / 256.0);
 
     return pixels[index];
 }
@@ -155,6 +221,7 @@ void fill(struct Camera *camera, struct Vec3 triangle[4]) {
                     currentDepth = unidepth;
                 }
                 if (camera->depthBuffer[y][x] > currentDepth) {
+                    camera->depthBuffer[y][x] = currentDepth;
                     camera->renderingBuffer[y][x] = getPixel(triangle[3].x);
                 }
             }
@@ -317,4 +384,29 @@ void render(struct Camera *camera, struct World *world) {
         }
         printf("\n");
     }
+}
+
+void clearScreen(struct Camera *camera) {
+    printf("\033[2J\033[1;1H");
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            camera->renderingBuffer[y][x] = ' ';
+            camera->depthBuffer[y][x] = INFINITY;
+        }
+    }
+}
+
+void deleteCamera(struct Camera *camera) {
+    free(camera);
+}
+
+void deleteWorld(struct World *world) {
+    for (int i = 0; i < world->numOfObjects; i++) {
+        for (int j = 0; j < world->objs[i].numOfTriangles; j++) {
+            free(world->objs[i].triangles[j]);
+        }
+        free(world->objs[i].triangles);
+    }
+    free(world->objs);
+    free(world);
 }

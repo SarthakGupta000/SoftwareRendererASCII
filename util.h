@@ -1,10 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#define FOCAL_LENGTH 1
+#define FOCAL_LENGTH 10
+#define SPEED 0.5
 #define EPSILON 1e-6
-#define HEIGHT 50
-#define WIDTH 50
+#define HEIGHT 40
+#define WIDTH 100
 
 struct Vec3 {
     double x;
