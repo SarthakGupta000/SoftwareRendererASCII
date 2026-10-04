@@ -54,9 +54,12 @@ char getPixel(double brightness);
 
 // array is positive Z
 void fill(struct Camera *camera, struct Vec3 triangle[4]); // updates the depth buffer, fills, 2D clipping
- 
-void rasterize(struct Camera *camera, struct Vec3 triangle[4]); // everything like negative clipping, calling fill
 
+struct Vec3 clippedLine(struct Vec3 point1, struct Vec3 point2);
+
+void rasterize(struct Camera *camera, struct Vec3 triangle[4]); // everything like negative clipping, calling fill
+ 
+// print and set up buffer
 void render(struct Camera *camera);
 
 void clearScreen(struct Camera *camera); // both the buffer and the screen

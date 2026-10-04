@@ -115,6 +115,13 @@ int insideTriangle(struct Vec2 triangle[4], struct Vec2 normVec) {
     }
 }
 
+char getPixel(double brightness) {
+    const char *pixels = " .:-=+*#%@";
+    int index = (int)(brightness / 256.0 * 10);
+
+    return pixels[index];
+}
+
 // takes the 3D triangle with positive or zero z values
 void fill(struct Camera *camera, struct Vec3 triangle[4]) {
     struct Vec2 triangle2D[3];
@@ -125,7 +132,7 @@ void fill(struct Camera *camera, struct Vec3 triangle[4]) {
     // plane
     double unidepth = 0.0;
     double a, b, c;
-    if ((triangle[0].x == triangle[1].x && triangle[1].x == triangle[2].x) || (triangle[0].y == triangle[1].y && triangle[1].y == triangle[2].y)) {
+    if (approxEqual((((triangle[0].x - triangle[2].x) * (triangle[1].y - triangle[2].y)) - ((triangle[1].x - triangle[2].x) * (triangle[0].y - triangle[2].y))), 0.0) || approxEqual((((triangle[0].y - triangle[2].y) * (triangle[1].x - triangle[2].x)) - ((triangle[1].y - triangle[2].y) * (triangle[0].x - triangle[2].x))), 0.0)) {
         return;
     }
     if (triangle[0].z == triangle[1].z && triangle[1].z == triangle[2].z) {
@@ -152,5 +159,141 @@ void fill(struct Camera *camera, struct Vec3 triangle[4]) {
                 }
             }
         }
+    }
+}
+
+struct Vec3 clippedLine(struct Vec3 point1, struct Vec3 point2) {
+    double dx = point1.x - point2.x;
+    double dy = point1.y - point2.y;
+    double dz = point1.z - point2.z;
+    struct Vec3 ratio = {dx, dy, dz};
+    ratio.x *= point1.z / dz;
+    ratio.y *= point1.z / dz;
+    struct Vec3 newPoint = {point1.x - ratio.x, point1.y - ratio.y, 0.0};
+    return newPoint;
+}
+
+void rasterize(struct Camera *camera, struct Vec3 triangle[4]) {
+    int sum = 0;
+    for (int i = 0; i < 3; i++) {
+        if (approxEqual(triangle[i].z, 0.0)) {
+            sum++;
+        }
+    }
+    if (sum == 0) {
+        sum = 0;
+        for (int i = 0; i < 3; i++) {
+            if (triangle[i].z > 0) {
+                sum++;
+            }
+        }
+        if (sum == 3) {
+            fill(camera, triangle);
+            return;
+        }
+        if (sum == 0) {
+            return;
+        }
+        if (sum == 1) {
+            int val = 0;
+            for (int i = 0; i < 3; i++) {
+                if (triangle[i].z > 0) {
+                    val = i;
+                }
+            }
+            int vals[2];
+            int next = 0;
+            for (int i = 0; i < 3; i++) {
+                if (i == val) {
+                    continue;
+                }
+                vals[next] = i;
+                next++;
+            }
+            struct Vec3 newTriangle[4];
+            newTriangle[0] = triangle[val];
+            newTriangle[1] = clippedLine(triangle[val], triangle[vals[0]]);
+            newTriangle[2] = clippedLine(triangle[val], triangle[vals[1]]);
+            newTriangle[3] = triangle[3];
+            fill(camera, newTriangle);
+            return;
+        }
+        if (sum == 2) {
+            int val = 0;
+            for (int i = 0; i < 3; i++) {
+                if (triangle[i].z < 0) {
+                    val = i;
+                }
+            }
+            int vals[2];
+            int next = 0;
+            for (int i = 0; i < 3; i++) {
+                if (i == val) {
+                    continue;
+                }
+                vals[next] = i;
+                next++;
+            }
+            struct Vec3 newTriangle1[4];
+            newTriangle1[0] = triangle[vals[0]];
+            newTriangle1[1] = triangle[vals[1]];
+            newTriangle1[2] = clippedLine(triangle[vals[0]], triangle[val]);
+            newTriangle1[3] = triangle[3];
+            fill(camera, newTriangle1);
+            struct Vec3 newTriangle2[4];
+            newTriangle2[0] = triangle[vals[1]];
+            newTriangle2[1] = clippedLine(triangle[val], triangle[vals[0]]);
+            newTriangle2[2] = clippedLine(triangle[val], triangle[vals[1]]);
+            newTriangle2[3] = triangle[3];
+            fill(camera, newTriangle2);
+            return;
+        }
+    }
+    if (sum == 3) {
+        fill(camera, triangle);
+        return;
+    }
+    if (sum == 2) {
+        double val = 0;
+        for (int i = 0; i < 3; i++) {
+            if (!approxEqual(triangle[i].z, 0.0)) {
+                val = triangle[i].z;
+                break;
+            }
+        }
+        if (val > 0) {
+            fill(camera, triangle);
+            return;
+        }
+        if (val < 0) {
+            return;
+        }
+    }
+    if (sum == 1) {
+        int vals[2];
+        int next = 0;
+        int zeroVal = 0;
+        for (int i = 0; i < 3; i++) {
+            if (!approxEqual(triangle[i].z, 0.0)) {
+                vals[next] = i;
+                next++;
+            } else {
+                zeroVal = i;
+            }
+        }
+        if (triangle[vals[0]].z > 0 && triangle[vals[1]].z > 0) {
+            fill(camera, triangle);
+            return;
+        }
+        if (triangle[vals[0]].z < 0 && triangle[vals[1]].z < 0) {
+            return;
+        }
+        struct Vec3 newTriangle[4];
+        newTriangle[0] = triangle[zeroVal];
+        newTriangle[1] = triangle[vals[0]].z > 0 ? triangle[vals[0]] : triangle[vals[1]];
+        newTriangle[2] = clippedLine(triangle[vals[0]], triangle[vals[1]]);
+        newTriangle[3] = triangle[3];
+        fill(camera, newTriangle);
+        return;
     }
 }
