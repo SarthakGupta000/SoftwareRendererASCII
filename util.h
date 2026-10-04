@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #define FOCAL_LENGTH 1
 #define EPSILON 1e-6
@@ -59,8 +61,8 @@ struct Vec3 clippedLine(struct Vec3 point1, struct Vec3 point2);
 
 void rasterize(struct Camera *camera, struct Vec3 triangle[4]); // everything like negative clipping, calling fill
  
-// print and set up buffer
-void render(struct Camera *camera);
+// print
+void render(struct Camera *camera, struct World *world);
 
 void clearScreen(struct Camera *camera); // both the buffer and the screen
 

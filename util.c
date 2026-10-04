@@ -297,3 +297,24 @@ void rasterize(struct Camera *camera, struct Vec3 triangle[4]) {
         return;
     }
 }
+
+void render(struct Camera *camera, struct World *world) {
+    for (int i = 0; i < world->numOfObjects; i++) {
+        for (int j = 0; j < world->objs[i].numOfTriangles; j++) {
+            struct Vec3 worldTriangle[4];
+            for (int k = 0; k < 3; k++) {
+                worldTriangle[k].x = world->objs[i].triangles[j][k].x + world->objs[i].origin.x;
+                worldTriangle[k].y = world->objs[i].triangles[j][k].y + world->objs[i].origin.y;
+                worldTriangle[k].z = world->objs[i].triangles[j][k].z + world->objs[i].origin.z;
+            }
+            worldTriangle[3] = world->objs[i].triangles[j][3];
+            rasterize(camera, worldTriangle);
+        }
+    }
+    for (int y = 0; y < HEIGHT; y++) {
+        for (int x = 0; x < WIDTH; x++) {
+            printf("%c", camera->renderingBuffer[y][x]);
+        }
+        printf("\n");
+    }
+}
