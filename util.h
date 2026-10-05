@@ -4,8 +4,8 @@
 #define FOCAL_LENGTH 10
 #define SPEED 0.5
 #define EPSILON 1e-6
-#define HEIGHT 40
-#define WIDTH 100
+#define HEIGHT 30
+#define WIDTH 75
 
 struct Vec3 {
     double x;

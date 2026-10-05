@@ -48,12 +48,12 @@ struct Object setupCuboid(struct Vec3 vertices[8], struct Vec3 origin, double br
     }
 
     // Front
-    cuboid.triangles[0][0] = vertices[0];
+    cuboid.triangles[0][0] = vertices[3];
     cuboid.triangles[0][1] = vertices[1];
     cuboid.triangles[0][2] = vertices[2];
     cuboid.triangles[0][3] = (struct Vec3) {brightness, 0, 0};
 
-    cuboid.triangles[1][0] = vertices[2];
+    cuboid.triangles[1][0] = vertices[0];
     cuboid.triangles[1][1] = vertices[1];
     cuboid.triangles[1][2] = vertices[3];
     cuboid.triangles[1][3] = (struct Vec3) {brightness, 0, 0};
@@ -65,51 +65,51 @@ struct Object setupCuboid(struct Vec3 vertices[8], struct Vec3 origin, double br
     cuboid.triangles[2][3] = (struct Vec3) {brightness, 0, 0};
 
     cuboid.triangles[3][0] = vertices[6];
-    cuboid.triangles[3][1] = vertices[5];
+    cuboid.triangles[3][1] = vertices[4];
     cuboid.triangles[3][2] = vertices[7];
     cuboid.triangles[3][3] = (struct Vec3) {brightness, 0, 0};
 
     // Left
     cuboid.triangles[4][0] = vertices[0];
-    cuboid.triangles[4][1] = vertices[2];
-    cuboid.triangles[4][2] = vertices[6];
+    cuboid.triangles[4][1] = vertices[3];
+    cuboid.triangles[4][2] = vertices[4];
     cuboid.triangles[4][3] = (struct Vec3) {brightness, 0, 0};
 
     cuboid.triangles[5][0] = vertices[0];
-    cuboid.triangles[5][1] = vertices[6];
+    cuboid.triangles[5][1] = vertices[7];
     cuboid.triangles[5][2] = vertices[4];
     cuboid.triangles[5][3] = (struct Vec3) {brightness, 0, 0};
 
     // Right
     cuboid.triangles[6][0] = vertices[1];
     cuboid.triangles[6][1] = vertices[5];
-    cuboid.triangles[6][2] = vertices[7];
+    cuboid.triangles[6][2] = vertices[6];
     cuboid.triangles[6][3] = (struct Vec3) {brightness, 0, 0};
 
     cuboid.triangles[7][0] = vertices[1];
-    cuboid.triangles[7][1] = vertices[7];
-    cuboid.triangles[7][2] = vertices[3];
+    cuboid.triangles[7][1] = vertices[2];
+    cuboid.triangles[7][2] = vertices[5];
     cuboid.triangles[7][3] = (struct Vec3) {brightness, 0, 0};
 
     // Top
     cuboid.triangles[8][0] = vertices[2];
     cuboid.triangles[8][1] = vertices[3];
-    cuboid.triangles[8][2] = vertices[7];
+    cuboid.triangles[8][2] = vertices[4];
     cuboid.triangles[8][3] = (struct Vec3) {brightness, 0, 0};
 
     cuboid.triangles[9][0] = vertices[2];
-    cuboid.triangles[9][1] = vertices[7];
-    cuboid.triangles[9][2] = vertices[6];
+    cuboid.triangles[9][1] = vertices[4];
+    cuboid.triangles[9][2] = vertices[5];
     cuboid.triangles[9][3] = (struct Vec3) {brightness, 0, 0};
 
     // Bottom
-    cuboid.triangles[10][0] = vertices[0];
-    cuboid.triangles[10][1] = vertices[4];
-    cuboid.triangles[10][2] = vertices[5];
+    cuboid.triangles[10][0] = vertices[1];
+    cuboid.triangles[10][1] = vertices[7];
+    cuboid.triangles[10][2] = vertices[6];
     cuboid.triangles[10][3] = (struct Vec3) {brightness, 0, 0};
 
     cuboid.triangles[11][0] = vertices[0];
-    cuboid.triangles[11][1] = vertices[5];
+    cuboid.triangles[11][1] = vertices[7];
     cuboid.triangles[11][2] = vertices[1];
     cuboid.triangles[11][3] = (struct Vec3) {brightness, 0, 0};
 
@@ -380,7 +380,7 @@ void render(struct Camera *camera, struct World *world) {
     }
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
-            printf("%c", camera->renderingBuffer[y][x]);
+            printf("%c ", camera->renderingBuffer[y][x]);
         }
         printf("\n");
     }
