@@ -13,10 +13,10 @@ int main() {
         {-1.0,  1.0, -1.0}, // 3: Front-Top-Left
 
     // Back face (Z = 1.0)
-        { 1.0,  1.0,  1.0}, // 4: Back-Top-Right
-        {-1.0,  1.0,  1.0}, // 5: Back-Top-Left
-        {-1.0, -1.0,  1.0}, // 6: Back-Bottom-Left
-        { 1.0, -1.0,  1.0}  // 7: Back-Bottom-Right
+        {-1.0,  1.0,  1.0}, // 4: Back-Top-Right
+        { 1.0,  1.0,  1.0}, // 5: Back-Top-Left
+        { 1.0, -1.0,  1.0}, // 6: Back-Bottom-Left
+        {-1.0, -1.0,  1.0}  // 7: Back-Bottom-Right
     
     };
     struct Vec3 origin = {0.0, 0.0, 12.0};
