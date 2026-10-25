@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include "util.h"
+#define REFRESH 5000
 
 // rotates along each axis
 void rotate(struct Vec3 *vector, double theta) {
@@ -43,14 +44,19 @@ int main() {
         objs[0].triangles[(2 * i) + 1][3].x = current;
         current += 42;
     }
+    int sum = 0;
     while (1) {
+        if (sum >= 1000) {
+            goto jmp;
+        }
         render(camera, world);
         for (int i = 0; i < objs[0].numOfTriangles; i++) {
             for (int j = 0; j < 3; j++) {
                 rotate(&(objs[0].triangles[i][j]), theta);
             }
         }
-        usleep(5000);
+        usleep(REFRESH);
+        sum += 1;
         clearScreen(camera);
     }
     jmp:;
